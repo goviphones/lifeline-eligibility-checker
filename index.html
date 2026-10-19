@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lifeline Eligibility Checker 2026 | Gov iPhone</title>
+<meta name="description" content="Free 2026 Lifeline program eligibility checker by Gov iPhone. Check if your household qualifies by income (135% of federal poverty guidelines) or program participation. Open source (MIT).">
+<style>
+  :root{
+    --navy:#16294d; --navy2:#1e3a6e; --blue:#2563eb; --blue-d:#1d4ed8;
+    --teal:#0d9488; --bg:#f4f6fb; --card:#ffffff; --text:#1e293b; --muted:#64748b;
+    --green:#15803d; --greenbg:#f0fdf4; --red:#b91c1c; --redbg:#fef2f2;
+    --line:#e2e8f0; --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav-inner{max-width:1060px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:800;font-size:1.15rem;color:var(--navy);display:flex;align-items:center;gap:10px}
+  .brand .dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal))}
+  .nav-links{display:flex;gap:20px;font-size:.92rem;font-weight:600}
+  .nav-links a{color:var(--text)}
+  .nav-links a:hover{color:var(--blue)}
+  @media(max-width:640px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{background:linear-gradient(135deg,var(--navy),var(--navy2) 60%,#274b85);color:#fff}
+  .hero-inner{max-width:1060px;margin:0 auto;padding:72px 20px 64px}
+  .kicker{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:2.4rem;line-height:1.2;max-width:640px;margin-bottom:14px}
+  .hero p.lead{font-size:1.08rem;opacity:.88;max-width:600px;margin-bottom:28px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:14px 28px;border-radius:12px;font-weight:700;font-size:1rem;border:none;cursor:pointer}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:var(--blue-d);text-decoration:none}
+  .btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5)}
+  .btn-ghost:hover{border-color:#fff;text-decoration:none}
+  .hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+  .hero-badges span{font-size:.82rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:999px}
+
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+  section.block{padding:56px 0 8px}
+  section.block h2.sec{font-size:1.7rem;color:var(--navy);margin-bottom:8px;text-align:center}
+  p.sec-sub{text-align:center;color:var(--muted);max-width:620px;margin:0 auto 30px}
+
+  /* checker */
+  .checker-grid{display:grid;grid-template-columns:1fr;gap:0;max-width:760px;margin:0 auto}
+  .card{background:var(--card);border-radius:var(--radius);padding:32px;box-shadow:0 4px 24px rgba(22,41,77,.08)}
+  .card h3{font-size:1.15rem;margin-bottom:16px;color:var(--navy)}
+  label.f{display:block;font-weight:600;margin:16px 0 6px;font-size:.92rem}
+  label.f:first-child{margin-top:0}
+  select,input[type=number]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:1rem;background:#fff}
+  .check{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:.93rem;font-weight:400}
+  .check:hover{border-color:var(--blue)}
+  .check input{margin-top:4px;accent-color:var(--blue)}
+  .tribal{background:#fffbeb;border-color:#fcd34d}
+  button#checkBtn{width:100%;margin-top:20px;padding:15px;font-size:1.05rem;font-weight:700;color:#fff;background:var(--blue);border:none;border-radius:12px;cursor:pointer}
+  button#checkBtn:hover{background:var(--blue-d)}
+  .hint{font-size:.82rem;color:var(--muted);margin-top:4px}
+  #result{display:none;border-radius:var(--radius);padding:28px;margin:20px auto 0;max-width:760px}
+  #result.eligible{display:block;background:var(--greenbg);border:2px solid var(--green)}
+  #result.noteligible{display:block;background:var(--redbg);border:2px solid var(--red)}
+  #result h3{margin-bottom:10px}
+  #result.eligible h3{color:var(--green)}
+  #result.noteligible h3{color:var(--red)}
+  #result ul{margin:10px 0 10px 20px;font-size:.94rem}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+  @media(max-width:720px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:0 2px 12px rgba(22,41,77,.06)}
+  .step .n{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .step h3{font-size:1.02rem;margin-bottom:8px;color:var(--navy)}
+  .step p{font-size:.92rem;color:var(--muted)}
+
+  /* facts */
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:860px){.facts{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.facts{grid-template-columns:1fr}}
+  .fact{background:var(--navy);color:#fff;border-radius:var(--radius);padding:26px 22px;text-align:center}
+  .fact .big{font-size:1.9rem;font-weight:800;margin-bottom:6px}
+  .fact .lbl{font-size:.85rem;opacity:.8}
+
+  /* table */
+  .table-card{max-width:640px;margin:0 auto;background:var(--card);border-radius:var(--radius);padding:28px;box-shadow:0 2px 12px rgba(22,41,77,.06)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}
+  th{background:#f1f5f9;color:var(--navy)}
+  .tbl-note{font-size:.82rem;color:var(--muted);margin-top:10px}
+
+  /* faq */
+  .faq{max-width:760px;margin:0 auto}
+  details{background:var(--card);border-radius:12px;padding:18px 22px;margin-bottom:12px;box-shadow:0 2px 8px rgba(22,41,77,.05)}
+  summary{font-weight:700;cursor:pointer;color:var(--navy);font-size:.98rem}
+  details p{margin-top:10px;font-size:.93rem;color:var(--text)}
+
+  .disclaimer{max-width:760px;margin:40px auto 0;font-size:.82rem;color:var(--muted);background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .disclaimer strong{color:var(--text)}
+
+  footer.site{background:var(--navy);color:#fff;margin-top:64px}
+  .foot-inner{max-width:1060px;margin:0 auto;padding:40px 20px;display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-start}
+  .foot-inner h4{font-size:1rem;margin-bottom:10px}
+  .foot-inner a{color:#cbd5e1;font-size:.9rem;display:block;margin-bottom:6px}
+  .foot-inner a:hover{color:#fff}
+  .foot-note{max-width:1060px;margin:0 auto;padding:0 20px 28px;font-size:.8rem;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span>Gov iPhone</div>
+    <div class="nav-links">
+      <a href="#checker">Checker</a>
+      <a href="#how">How it works</a>
+      <a href="#facts">2026 Facts</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://goviphone.com/" target="_blank" rel="noopener">Gov iPhone &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="kicker">Free &middot; Open Source &middot; 2026 Figures</span>
+    <h1>Check Your Lifeline Eligibility in 60 Seconds</h1>
+    <p class="lead">Answer a few questions to see if your household likely qualifies for the federal Lifeline discount on phone or broadband service, up to $9.25/month ($34.25 on Tribal lands).</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#checker">Check eligibility now</a>
+      <a class="btn btn-ghost" href="https://goviphone.com/plans/" target="_blank" rel="noopener">Compare carriers</a>
+    </div>
+    <div class="hero-badges">
+      <span>No sign-up needed</span>
+      <span>Runs 100% in your browser</span>
+      <span>No data collected</span>
+      <span>MIT licensed</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="block" id="checker">
+    <h2 class="sec">Eligibility Checker</h2>
+    <p class="sec-sub">Fill in your household details below. The check uses 2026 federal poverty guidelines and official Lifeline qualifying programs.</p>
+    <div class="checker-grid">
+      <div class="card">
+        <h3>Your household</h3>
+        <label class="f" for="hhSize">Household size</label>
+        <select id="hhSize">
+          <option value="1">1 person</option>
+          <option value="2">2 people</option>
+          <option value="3">3 people</option>
+          <option value="4">4 people</option>
+          <option value="5">5 people</option>
+          <option value="6">6 people</option>
+          <option value="7">7 people</option>
+          <option value="8">8 people</option>
+          <option value="9">9 or more</option>
+        </select>
+
+        <label class="f" for="income">Total annual household income (before taxes, USD)</label>
+        <input type="number" id="income" min="0" step="100" placeholder="e.g. 20000">
+        <div class="hint">Include income of everyone in the household who shares income and expenses.</div>
+
+        <label class="f">Does anyone in your household participate in any of these programs?</label>
+        <div id="programs">
+          <label class="check"><input type="checkbox" value="Medicaid"> Medicaid</label>
+          <label class="check"><input type="checkbox" value="SNAP"> SNAP / EBT (food stamps)</label>
+          <label class="check"><input type="checkbox" value="SSI"> Supplemental Security Income (SSI)</label>
+          <label class="check"><input type="checkbox" value="FPHA"> Federal Public Housing Assistance</label>
+          <label class="check"><input type="checkbox" value="Veterans"> Veterans Pension or Survivors Benefit</label>
+          <label class="check"><input type="checkbox" value="TribalProg"> Tribal program (BIA General Assistance, Tribal TANF, Food Distribution Program on Indian Reservations, Tribal Head Start)</label>
+        </div>
+
+        <label class="check tribal"><input type="checkbox" id="tribal"> My household is on qualifying Tribal lands</label>
+
+        <button id="checkBtn" type="button">Check eligibility</button>
+      </div>
+    </div>
+    <div id="result" role="status"></div>
+  </section>
+
+  <section class="block" id="how">
+    <h2 class="sec">How it works</h2>
+    <p class="sec-sub">Three steps between you and an answer.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Enter household details</h3><p>Household size, annual income, and any benefit programs someone in the home participates in.</p></div>
+      <div class="step"><div class="n">2</div><h3>We check both routes</h3><p>Income at or below 135% of the 2026 federal poverty guidelines, or participation in a qualifying program.</p></div>
+      <div class="step"><div class="n">3</div><h3>Get your answer</h3><p>See right away whether your household likely qualifies, and what to do next through the National Verifier.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="facts">
+    <h2 class="sec">2026 Lifeline facts</h2>
+    <p class="sec-sub">The key numbers behind the check.</p>
+    <div class="facts">
+      <div class="fact"><div class="big">$9.25</div><div class="lbl">Standard monthly discount</div></div>
+      <div class="fact"><div class="big">$34.25</div><div class="lbl">Monthly discount on Tribal lands</div></div>
+      <div class="fact"><div class="big">135%</div><div class="lbl">Of federal poverty guidelines (income route)</div></div>
+      <div class="fact"><div class="big">1</div><div class="lbl">Benefit allowed per household</div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="sec">2026 income limits</h2>
+    <p class="sec-sub">Annual household income at or below these amounts qualifies through the income route.</p>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Household size</th><th>Annual income at or below</th></tr></thead>
+        <tbody id="limitTable"></tbody>
+      </table>
+      <p class="tbl-note">48 contiguous states and DC. Alaska and Hawaii have higher limits. Source: HHS 2026 Federal Poverty Guidelines.</p>
+    </div>
+  </section>
+
+  <section class="block" id="faq">
+    <h2 class="sec">FAQ</h2>
+    <p class="sec-sub">Quick answers to common questions.</p>
+    <div class="faq">
+      <details>
+        <summary>Is this an official government tool?</summary>
+        <p>No. This is an independent estimate built by Gov iPhone. Official eligibility is determined by USAC's National Verifier (Oregon and Texas use state processes).</p>
+      </details>
+      <details>
+        <summary>Which programs count for the program route?</summary>
+        <p>Medicaid, SNAP/EBT, Supplemental Security Income (SSI), Federal Public Housing Assistance, Veterans Pension or Survivors Benefit, and qualifying Tribal programs.</p>
+      </details>
+      <details>
+        <summary>How much is the Lifeline discount in 2026?</summary>
+        <p>Up to $9.25 per month off phone or broadband service, or up to $34.25 per month for households on qualifying Tribal lands.</p>
+      </details>
+      <details>
+        <summary>Can I get more than one Lifeline benefit?</summary>
+        <p>No. Only one Lifeline benefit is allowed per household, whether it is used for phone or broadband service.</p>
+      </details>
+      <details>
+        <summary>What do I do if I likely qualify?</summary>
+        <p>Apply through the National Verifier, then pick a participating carrier. You can compare carriers side by side at <a href="https://goviphone.com/plans/" target="_blank" rel="noopener">goviphone.com/plans</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <div class="disclaimer">
+    <strong>Important:</strong> This checker gives an estimate only. It is not an official eligibility determination and not an application. Benefit amounts and rules can change; always confirm current details with USAC or the FCC. Gov iPhone is an independent resource, not a government agency, and is not affiliated with USAC or the FCC.
+  </div>
+
+</div>
+
+<footer class="site">
+  <div class="foot-inner">
+    <div>
+      <h4>Gov iPhone</h4>
+      <a href="https://goviphone.com/" target="_blank" rel="noopener">Free Government iPhone &amp; 2026 Lifeline Guide</a>
+      <a href="https://goviphone.com/plans/" target="_blank" rel="noopener">Carrier comparison</a>
+    </div>
+    <div>
+      <h4>This project</h4>
+      <a href="https://github.com/goviphones/lifeline-eligibility-checker" target="_blank" rel="noopener">GitHub repository</a>
+      <a href="#checker">Eligibility checker</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div>
+      <h4>Elsewhere</h4>
+      <a href="https://www.youtube.com/@goviphone" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://www.linkedin.com/company/gov-iphone" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://www.producthunt.com/products/lifeline-eligibility-checker" target="_blank" rel="noopener">Product Hunt</a>
+    </div>
+  </div>
+  <div class="foot-note">Open source under the MIT License. Built by Gov iPhone, an independent resource, not a government agency.</div>
+</footer>
+
+<script>
+// 2026 HHS federal poverty guidelines, 48 contiguous states + DC (annual, 100% FPL)
+var FPL = {1:15960, 2:21640, 3:27320, 4:33000, 5:38680, 6:44360, 7:50040, 8:55720};
+var FPL_EXTRA = 5680; // per person beyond 8
+var LIFELINE_PCT = 1.35;
+
+function fplFor(size){
+  if (size <= 8) return FPL[size];
+  return FPL[8] + FPL_EXTRA * (size - 8);
+}
+function fmt(n){ return "$" + Math.round(n).toLocaleString("en-US"); }
+
+// render limit table
+(function(){
+  var tb = document.getElementById("limitTable"), html = "";
+  for (var s = 1; s <= 8; s++) html += "<tr><td>" + s + (s===1?" person":" people") + "</td><td>" + fmt(fplFor(s)*LIFELINE_PCT) + "/year</td></tr>";
+  tb.innerHTML = html;
+})();
+
+document.getElementById("checkBtn").addEventListener("click", function(){
+  var size = parseInt(document.getElementById("hhSize").value, 10);
+  var incomeRaw = document.getElementById("income").value;
+  var tribal = document.getElementById("tribal").checked;
+  var boxes = document.querySelectorAll('#programs input[type=checkbox]');
+  var programs = [];
+  for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) programs.push(boxes[i].value);
+
+  var limit = fplFor(size) * LIFELINE_PCT;
+  var incomeQualifies = false, incomeGiven = incomeRaw !== "" && !isNaN(parseFloat(incomeRaw));
+  var income = incomeGiven ? parseFloat(incomeRaw) : null;
+  if (incomeGiven) incomeQualifies = income <= limit;
+  var programQualifies = programs.length > 0;
+  var eligible = incomeQualifies || programQualifies;
+  var benefit = tribal ? "$34.25/month" : "$9.25/month";
+
+  var r = document.getElementById("result");
+  var html = "";
+  if (eligible) {
+    r.className = "eligible";
+    html += "<h3>Likely eligible</h3>";
+    html += "<p>Based on your answers, your household <strong>likely qualifies</strong> for the Lifeline program, with a discount of up to <strong>" + benefit + "</strong> on phone or broadband service" + (tribal ? " (enhanced Tribal benefit)" : "") + ".</p><ul>";
+    if (programQualifies) html += "<li>Program route: " + programs.join(", ") + "</li>";
+    if (incomeQualifies) html += "<li>Income route: " + fmt(income) + " is at or below the " + fmt(limit) + " limit for a " + size + "-person household</li>";
+    html += "</ul><p style='font-size:.92rem'>Next step: apply through the <strong>National Verifier</strong> (USAC), then choose a participating carrier. Compare carriers side by side at <a href='https://goviphone.com/plans/'>goviphone.com/plans</a>.</p>";
+  } else {
+    r.className = "noteligible";
+    html += "<h3>Not likely eligible on these answers</h3><p>";
+    if (!incomeGiven && !programQualifies) {
+      html += "You did not enter an income or select a program, so no route to eligibility was found.";
+    } else if (incomeGiven) {
+      html += "Your entered income of <strong>" + fmt(income) + "</strong> is above the " + fmt(limit) + " yearly limit for a " + size + "-person household, and no qualifying program was selected.";
+    } else {
+      html += "No qualifying program was selected.";
+    }
+    html += "</p><p style='font-size:.92rem'>If your situation changes, check again. Official determination is always made by USAC's National Verifier.</p>";
+  }
+  r.innerHTML = html;
+  r.scrollIntoView({behavior:"smooth", block:"nearest"});
+});
+</script>
+</body>
+</html>
